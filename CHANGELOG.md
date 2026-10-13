@@ -1,3 +1,30 @@
+## 0.11.0
+
+First release as `adaptive_test_plus`, a drop-in compatible continuation of
+`adaptive_test` 0.10.4. Golden file paths and existing APIs are unchanged.
+
+- feat: `testAdaptiveThemedWidgets` runs each device in light and dark mode and
+  sets the platform brightness accordingly.
+- feat: `AdaptiveTestConfiguration.themedDeviceVariant`.
+- feat: `WindowConfigData.light()`, `dark()`, `withThemeMode()`.
+- feat: localized goldens with `setLocalizedDeviceVariants`,
+  `WindowConfigData.locale` and `withLocale()`. The locale is applied to the
+  test platform dispatcher.
+- feat: `setApplyThemeModeToPlatformBrightness` (opt-in) for
+  `testAdaptiveWidgets`.
+- feat: `setGoldenFileNameFactory` with `GoldenFileNameFactories.flat`
+  (default) and `GoldenFileNameFactories.nested`.
+- feat: `setCustomDescribeValue` to customize test descriptions.
+- feat: `setSkipGoldenAssertion` to skip adaptive tests conditionally.
+- feat: `expectGolden(onDeviceSetup: ...)` hook.
+- feat: `awaitImages` waits for images appearing after other images loaded
+  (`maxPasses`).
+- fix: `ViewPaddingImpl` value equality, so identical `WindowConfigData` are
+  equal.
+- chore: rename package to `adaptive_test_plus`.
+  `package:adaptive_test_plus/adaptive_test.dart` is kept as an alias entry
+  point.
+
 ## 0.10.4
 
 - fix: catch flaky offstage widget finder errors in awaitImages

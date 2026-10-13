@@ -10,8 +10,11 @@ jobs:
   test:
     runs-on: macos-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
+          - dir: .
+            name: package
           - dir: example/simple_app
             name: simple_app
           - dir: example/multi_packages_app/app
@@ -23,7 +26,7 @@ jobs:
         working-directory: ${{ matrix.dir }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - id: dotenv
         uses: falti/dotenv-action@v0.2.8

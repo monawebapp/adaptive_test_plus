@@ -1,17 +1,16 @@
 import 'dart:io';
 
-import 'package:adaptive_test/src/adaptive/widgets/adaptive_wrapper.dart';
-import 'package:adaptive_test/src/adaptive/window_config_data/window_config_data.dart';
-import 'package:adaptive_test/src/adaptive/window_configuration_tester.dart';
-import 'package:adaptive_test/src/configuration.dart';
-import 'package:adaptive_test/src/helpers/await_images.dart';
-import 'package:adaptive_test/src/helpers/skip_test_extension.dart';
-import 'package:adaptive_test/src/helpers/target_platform_extension.dart';
+import 'package:adaptive_test_plus/src/adaptive/widgets/adaptive_wrapper.dart';
+import 'package:adaptive_test_plus/src/adaptive/window_config_data/window_config_data.dart';
+import 'package:adaptive_test_plus/src/adaptive/window_configuration_tester.dart';
+import 'package:adaptive_test_plus/src/configuration.dart';
+import 'package:adaptive_test_plus/src/helpers/await_images.dart';
+import 'package:adaptive_test_plus/src/helpers/skip_test_extension.dart';
+import 'package:adaptive_test_plus/src/helpers/target_platform_extension.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meta/meta.dart';
-import 'package:recase/recase.dart';
 
 /// Type of [callback] that will be executed inside the Flutter test
 /// environment.
@@ -40,25 +39,77 @@ void testAdaptiveWidgets(
   dynamic tags,
 }) {
   final configuration = AdaptiveTestConfiguration.instance;
-  final defaultVariant = configuration.deviceVariant;
-  final variant = variantOverride ?? defaultVariant;
 
-  final _skip = skip ?? configuration.shouldSkipTest;
+  _testAdaptiveWidgets(
+    description,
+    callback,
+    variant: variantOverride ?? configuration.deviceVariant,
+    applyBrightness: configuration.applyThemeModeToPlatformBrightness,
+    skip: skip,
+    timeout: timeout,
+    semanticsEnabled: semanticsEnabled,
+    tags: tags,
+  );
+}
 
+/// Same as [testAdaptiveWidgets], but runs every device of
+/// [AdaptiveTestConfiguration.deviceVariant] twice: once in light mode and
+/// once in dark mode (see [AdaptiveTestConfiguration.themedDeviceVariant]).
+///
+/// The platform brightness follows [WindowConfigData.themeMode], so apps
+/// using [ThemeMode.system] are rendered in both modes. The theme mode is
+/// also available on the `windowConfig` passed to [callback].
+@isTest
+void testAdaptiveThemedWidgets(
+  String description,
+  WidgetTesterAdaptiveCallback callback, {
+  bool? skip,
+  Timeout? timeout,
+  bool semanticsEnabled = true,
+  ValueVariant<WindowConfigData>? variantOverride,
+  // ignore: avoid-dynamic, argument type of testWidgets
+  dynamic tags,
+}) {
+  _testAdaptiveWidgets(
+    description,
+    callback,
+    variant: variantOverride ??
+        AdaptiveTestConfiguration.instance.themedDeviceVariant,
+    applyBrightness: true,
+    skip: skip,
+    timeout: timeout,
+    semanticsEnabled: semanticsEnabled,
+    tags: tags,
+  );
+}
+
+void _testAdaptiveWidgets(
+  String description,
+  WidgetTesterAdaptiveCallback callback, {
+  required ValueVariant<WindowConfigData> variant,
+  required bool applyBrightness,
+  required bool? skip,
+  required Timeout? timeout,
+  required bool semanticsEnabled,
+  // ignore: avoid-dynamic, argument type of testWidgets
+  required dynamic tags,
+}) {
   testWidgets(
     description,
     (tester) async {
       // ignore: avoid-non-null-assertion, will throw in test
-      debugDefaultTargetPlatformOverride = variant.currentValue!.targetPlatform;
+      final windowConfig = variant.currentValue!;
+      debugDefaultTargetPlatformOverride = windowConfig.targetPlatform;
       debugDisableShadows = false;
-      // ignore: avoid-non-null-assertion, will throw in test
-      tester.configureWindow(variant.currentValue!);
-      // ignore: avoid-non-null-assertion, will throw in test
-      await callback(tester, variant.currentValue!);
+      tester.configureWindow(windowConfig);
+      if (applyBrightness) {
+        tester.configurePlatformBrightness(windowConfig);
+      }
+      await callback(tester, windowConfig);
       debugDisableShadows = true;
       debugDefaultTargetPlatformOverride = null;
     },
-    skip: _skip,
+    skip: skip ?? AdaptiveTestConfiguration.instance.shouldSkipTest,
     timeout: timeout,
     semanticsEnabled: semanticsEnabled,
     variant: variant,
@@ -83,6 +134,9 @@ extension Adaptive on WidgetTester {
   /// By default, the path of the generated golden file is constructed as
   /// follows:
   /// `preview/${windowConfig.name}-${name.snakeCase}$localSuffix.png`.
+  /// For localized variants, `-<locale>` is appended before the extension.
+  /// The layout can be changed with
+  /// [AdaptiveTestConfiguration.setGoldenFileNameFactory].
   /// If a [path] is provided, it will override this default behavior.
   ///
   /// The [byKey] argument allows the test to find the widget by its unique key,
@@ -94,6 +148,9 @@ extension Adaptive on WidgetTester {
   /// Set [waitForImages] to `false` if you want to skip waiting for all images
   /// to load before taking the snapshot. By default, it waits for all images to
   /// load.
+  ///
+  /// [onDeviceSetup] runs right before the golden assertion, after images
+  /// are loaded. Use it for per-device adjustments such as scrolling.
   @isTest
   Future<void> expectGolden<T>(
     WindowConfigData windowConfig, {
@@ -102,6 +159,8 @@ extension Adaptive on WidgetTester {
     Key? byKey,
     int? version,
     bool waitForImages = true,
+    Future<void> Function(WidgetTester tester, WindowConfigData windowConfig)?
+        onDeviceSetup,
   }) async {
     final enforcedTestPlatform =
         AdaptiveTestConfiguration.instance.enforcedTestPlatform;
@@ -113,15 +172,14 @@ extension Adaptive on WidgetTester {
       );
     }
 
-    final localSuffix = suffix != null ? '_${ReCase(suffix).snakeCase}' : '';
-
-    final name = ReCase('$T');
     if (waitForImages) {
       await awaitImages();
     }
+    await onDeviceSetup?.call(this, windowConfig);
 
     final key = path ??
-        'preview/${windowConfig.name}-${name.snakeCase}$localSuffix.png';
+        AdaptiveTestConfiguration.instance
+            .goldenFileNameFactory(windowConfig, T, suffix);
     await expectLater(
       // Find by its type except if the widget's unique key was given.
       byKey != null ? find.byKey(byKey) : find.byType(AdaptiveWrapper),

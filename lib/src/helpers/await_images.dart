@@ -9,7 +9,35 @@ import 'package:flutter_test/flutter_test.dart';
 /// e.g. [awaitImages];
 extension AwaitImages on WidgetTester {
   /// Pauses test until images are ready to be rendered.
-  Future<void> awaitImages() async {
+  ///
+  /// Images that only appear once other images are loaded (e.g. after a
+  /// placeholder) are awaited too: the lookup is repeated while new images
+  /// show up, at most [maxPasses] times.
+  Future<void> awaitImages({int maxPasses = 3}) async {
+    final awaited = <Element>{};
+    for (var pass = 0; pass < maxPasses; pass++) {
+      final elements = _imageElements();
+      if (pass > 0 && elements.every(awaited.contains)) {
+        return;
+      }
+      awaited.addAll(elements);
+      await _awaitImagesOnce();
+    }
+  }
+
+  List<Element> _imageElements() {
+    try {
+      return [
+        ...find.byType(Image, skipOffstage: false).evaluate(),
+        ...find.byType(FadeInImage, skipOffstage: false).evaluate(),
+        ...find.byType(DecoratedBox, skipOffstage: false).evaluate(),
+      ];
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  Future<void> _awaitImagesOnce() async {
     await runAsync(() async {
       for (final element
           in find.byType(Image, skipOffstage: false).evaluate().toList()) {

@@ -1,12 +1,81 @@
-import 'package:adaptive_test/src/adaptive/window_config.dart';
-import 'package:adaptive_test/src/adaptive/window_config_data/window_config_data.dart';
+import 'package:adaptive_test_plus/src/adaptive/window_config.dart';
+import 'package:adaptive_test_plus/src/adaptive/window_config_data/window_config_data.dart';
 import 'package:flutter/material.dart';
+import 'package:recase/recase.dart';
+
+/// Builds the golden file path used by `expectGolden` when no explicit `path`
+/// is given.
+typedef GoldenFileNameFactory = String Function(
+  WindowConfigData windowConfig,
+  Type widgetType,
+  String? suffix,
+);
+
+/// Builds the description of a [WindowConfigData] variant, displayed in the
+/// test name.
+typedef WindowConfigDescriber = String Function(WindowConfigData windowConfig);
+
+/// Returns true when golden tests should be skipped, e.g. on CI machines that
+/// cannot reproduce the reference rendering.
+typedef SkipGoldenAssertion = bool Function();
+
+/// Ready-made [GoldenFileNameFactory] implementations.
+abstract final class GoldenFileNameFactories {
+  /// Default layout, identical to `adaptive_test`:
+  /// `preview/<device>-<widget>[_<suffix>][-<locale>].png`.
+  ///
+  /// The locale part is only added for localized variants.
+  static String flat(
+    WindowConfigData windowConfig,
+    Type widgetType,
+    String? suffix,
+  ) {
+    final localSuffix = suffix != null ? '_${ReCase(suffix).snakeCase}' : '';
+    final locale = windowConfig.locale;
+    final localeSuffix = locale != null ? '-${localeTag(locale)}' : '';
+    final widgetName = ReCase('$widgetType').snakeCase;
+
+    return 'preview/${windowConfig.name}-$widgetName'
+        '$localSuffix$localeSuffix.png';
+  }
+
+  /// Nested layout, as introduced by `adaptive_test_extended`:
+  /// `golden/<widget>/[<suffix>/][<locale>/]<device>.png`.
+  static String nested(
+    WindowConfigData windowConfig,
+    Type widgetType,
+    String? suffix,
+  ) {
+    final locale = windowConfig.locale;
+
+    return [
+      'golden',
+      ReCase('$widgetType').snakeCase,
+      if (suffix != null && suffix.isNotEmpty) ReCase(suffix).snakeCase,
+      if (locale != null) localeTag(locale),
+      '${windowConfig.name}.png',
+    ].join('/');
+  }
+
+  /// File-system friendly locale tag, e.g. `en`, `pt_BR`.
+  static String localeTag(Locale locale) =>
+      locale.toLanguageTag().replaceAll('-', '_');
+}
+
+String _defaultDescribe(WindowConfigData windowConfig) {
+  final locale = windowConfig.locale;
+
+  return locale == null
+      ? windowConfig.name
+      : '${windowConfig.name}-${GoldenFileNameFactories.localeTag(locale)}';
+}
 
 /// Singleton class that configures global variables for the test.
 ///
 /// Notably:
 /// * `enforcedTestPlatform`, see [TargetPlatform].
 /// * `deviceVariant`, see [WindowVariant] and [WindowConfigData].
+/// * `themedDeviceVariant`, light and dark copies of `deviceVariant`.
 ///
 /// Configure those variables in the [testExecutable] function inside the
 /// `flutter_test_config.dart` file.
@@ -46,7 +115,54 @@ class AdaptiveTestConfiguration {
     _failTestOnWrongPlatform = failTestOnWrongPlatform;
   }
 
+  SkipGoldenAssertion? _skipGoldenAssertion;
+
+  SkipGoldenAssertion? get skipGoldenAssertion => _skipGoldenAssertion;
+
+  /// Skips every adaptive test whenever [callback] returns true.
+  ///
+  /// Evaluated when tests are declared. Defaults to never skipping.
+  void setSkipGoldenAssertion(SkipGoldenAssertion? callback) {
+    _skipGoldenAssertion = callback;
+  }
+
+  bool _applyThemeModeToPlatformBrightness = false;
+
+  bool get applyThemeModeToPlatformBrightness =>
+      _applyThemeModeToPlatformBrightness;
+
+  /// When true, `testAdaptiveWidgets` sets the platform brightness from
+  /// [WindowConfigData.themeMode], so apps using [ThemeMode.system] render
+  /// dark on dark devices.
+  ///
+  /// Defaults to false to keep existing goldens unchanged.
+  /// `testAdaptiveThemedWidgets` always applies it.
+  void setApplyThemeModeToPlatformBrightness(bool value) {
+    _applyThemeModeToPlatformBrightness = value;
+  }
+
+  GoldenFileNameFactory _goldenFileNameFactory = GoldenFileNameFactories.flat;
+
+  GoldenFileNameFactory get goldenFileNameFactory => _goldenFileNameFactory;
+
+  /// Overrides how `expectGolden` names golden files when no `path` is given.
+  ///
+  /// See [GoldenFileNameFactories].
+  void setGoldenFileNameFactory(GoldenFileNameFactory factory) {
+    _goldenFileNameFactory = factory;
+  }
+
+  WindowConfigDescriber _describeValue = _defaultDescribe;
+
+  WindowConfigDescriber get describeValue => _describeValue;
+
+  /// Overrides how a variant is described in test names.
+  void setCustomDescribeValue(WindowConfigDescriber describer) {
+    _describeValue = describer;
+  }
+
   WindowVariant? _deviceVariant;
+  WindowVariant? _themedDeviceVariant;
 
   WindowVariant get deviceVariant {
     final scopedDeviceVariant = _deviceVariant;
@@ -63,10 +179,48 @@ See: https://api.flutter.dev/flutter/flutter_test/flutter_test-library.html
     return scopedDeviceVariant;
   }
 
+  /// Light and dark copies of every device of [deviceVariant], used by
+  /// `testAdaptiveThemedWidgets`.
+  WindowVariant get themedDeviceVariant =>
+      _themedDeviceVariant ??= WindowVariant({
+        for (final config in deviceVariant.windowConfigs) ...[
+          config.light(),
+          config.dark(),
+        ],
+      });
+
   /// Set the devices variant on which you want your test to run.
   ///
   /// Eg [iPhone8], [iPhone13], [iPhone16],[iPhone16Dark], [iPadPro], [desktop], [pixel5], [pixel9].
   void setDeviceVariants(Set<WindowConfigData> deviceConfigs) {
     _deviceVariant = WindowVariant(deviceConfigs);
+    _themedDeviceVariant = null;
+  }
+
+  /// Set the devices variant, run once per device and per locale.
+  ///
+  /// The locale is applied to the test platform dispatcher, and appended to
+  /// golden file names and test descriptions.
+  void setLocalizedDeviceVariants(
+    Set<WindowConfigData> deviceConfigs,
+    Iterable<Locale> locales,
+  ) {
+    setDeviceVariants({
+      for (final config in deviceConfigs)
+        for (final locale in locales) config.withLocale(locale),
+    });
+  }
+
+  /// Restores every setting to its default value. Useful in tests.
+  @visibleForTesting
+  void reset() {
+    _enforcedTestPlatform = null;
+    _failTestOnWrongPlatform = true;
+    _skipGoldenAssertion = null;
+    _applyThemeModeToPlatformBrightness = false;
+    _goldenFileNameFactory = GoldenFileNameFactories.flat;
+    _describeValue = _defaultDescribe;
+    _deviceVariant = null;
+    _themedDeviceVariant = null;
   }
 }

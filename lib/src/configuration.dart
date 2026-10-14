@@ -28,6 +28,7 @@ class AdaptiveTestConfiguration {
   ///
   /// Eg [TargetPlatform.linux], [TargetPlatform.macOS],
   /// [TargetPlatform.windows].
+  // ignore: use_setters_to_change_properties
   void setEnforcedTestPlatform(TargetPlatform enforcedTestPlatform) {
     _enforcedTestPlatform = enforcedTestPlatform;
   }
@@ -42,6 +43,7 @@ class AdaptiveTestConfiguration {
   ///
   /// Setting [failTestOnWrongPlatform] to false will skip the test instead of
   /// failing it.
+  // ignore: use_setters_to_change_properties
   void setFailTestOnWrongPlatform(bool failTestOnWrongPlatform) {
     _failTestOnWrongPlatform = failTestOnWrongPlatform;
   }
@@ -65,7 +67,8 @@ See: https://api.flutter.dev/flutter/flutter_test/flutter_test-library.html
 
   /// Set the devices variant on which you want your test to run.
   ///
-  /// Eg [iPhone8], [iPhone13], [iPhone16],[iPhone16Dark], [iPadPro], [desktop], [pixel5], [pixel9].
+  /// Eg [iPhone8], [iPhone13], [iPhone16], [iPhone16Dark], [iPadPro],
+  /// [desktop], [pixel5], [pixel9].
   void setDeviceVariants(Set<WindowConfigData> deviceConfigs) {
     _deviceVariant = WindowVariant(deviceConfigs);
   }

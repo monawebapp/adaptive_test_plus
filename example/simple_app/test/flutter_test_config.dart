@@ -16,7 +16,7 @@ final defaultDeviceConfigs = {
   desktop,
   pixel9,
   pixel5ThreeButton,
-  pixel5TwoButton,
+  pixel5TwoButton
 };
 
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {

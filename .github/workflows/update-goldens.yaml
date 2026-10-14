@@ -11,18 +11,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - id: dotenv
-        uses: falti/dotenv-action@v0.2.8
-        with:
-          path: .github/workflows/.env
+      - id: fvm-config
+        uses: kuhnroyal/flutter-fvm-config-action/config@v3
 
       - uses: subosito/flutter-action@v2.5.0
         with:
-          flutter-version: ${{ steps.dotenv.outputs.flutter_version }}
-          channel: "stable"
+          flutter-version: ${{ steps.fvm-config.outputs.FLUTTER_VERSION }}
+          channel: ${{ steps.fvm-config.outputs.FLUTTER_CHANNEL }}
           cache: true
-          cache-key: flutter-macos-${{ steps.dotenv.outputs.flutter_version }}
-          cache-path: ${{ runner.tool_cache }}/flutter-${{ steps.dotenv.outputs.flutter_version }}
+          cache-key: flutter-macos-${{ steps.fvm-config.outputs.FLUTTER_VERSION }}
+          cache-path: ${{ runner.tool_cache }}/flutter-${{ steps.fvm-config.outputs.FLUTTER_VERSION }}
 
       - name: Format
         run: dart format lib test example

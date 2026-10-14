@@ -9,18 +9,18 @@ environment:
   sdk: '>=3.0.5 <4.0.0'
 
 dependencies:
+  cupertino_icons: ^1.0.2
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
   multi_packages_example_theme:
     path: '../theme'
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
   adaptive_test_plus:
     path: ../../../
 
+  flutter_test:
+    sdk: flutter
   theodo_analysis: ^1.3.0
 
 flutter:

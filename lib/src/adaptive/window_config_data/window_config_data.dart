@@ -54,7 +54,8 @@ class WindowConfigData extends Equatable {
   /// This is null when the device has no notch.
   final Size? notchSize;
 
-  /// Describe the size of the device physical screen top dynamic island in `dp`.
+  /// Describe the size of the device physical screen top dynamic island in
+  /// `dp`.
   ///
   /// This is null when the device has no dynamic island.
   final DynamicIslandData? dynamicIsland;
@@ -199,6 +200,9 @@ class WindowConfigData extends Equatable {
 }
 
 /// Implementation of the abstract class [FakeViewPadding].
+// `Equatable` is only usable as a mixin from equatable 2.1, and ^2.0.5 is
+// still allowed.
+// ignore: deprecated_member_use
 class ViewPaddingImpl with EquatableMixin implements FakeViewPadding {
   const ViewPaddingImpl({
     this.bottom = 0,

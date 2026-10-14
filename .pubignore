@@ -2,3 +2,6 @@ doc/example.png
 
 example/test/**/preview/
 
+# FVM
+.fvm/
+.fvmrc

@@ -350,4 +350,12 @@ This package is based on [adaptive_test](https://github.com/bamlab/adaptive_test
 created by [Theodo Apps](https://apps.theodo.com) and released under the MIT
 license.
 
+### Contributing
+
+The Flutter version used by CI and for the committed goldens is pinned in
+`.fvmrc`. With [FVM](https://fvm.app), run `fvm install` once, then prefix
+commands with `fvm` (`fvm flutter test`). FVM is optional: any Flutter version
+matching the SDK constraints in `pubspec.yaml` works for development, but
+goldens may differ slightly from the ones rendered with the pinned version.
+
 

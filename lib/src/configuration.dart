@@ -97,6 +97,7 @@ class AdaptiveTestConfiguration {
   ///
   /// Eg [TargetPlatform.linux], [TargetPlatform.macOS],
   /// [TargetPlatform.windows].
+  // ignore: use_setters_to_change_properties
   void setEnforcedTestPlatform(TargetPlatform enforcedTestPlatform) {
     _enforcedTestPlatform = enforcedTestPlatform;
   }
@@ -111,6 +112,7 @@ class AdaptiveTestConfiguration {
   ///
   /// Setting [failTestOnWrongPlatform] to false will skip the test instead of
   /// failing it.
+  // ignore: use_setters_to_change_properties
   void setFailTestOnWrongPlatform(bool failTestOnWrongPlatform) {
     _failTestOnWrongPlatform = failTestOnWrongPlatform;
   }
@@ -122,6 +124,7 @@ class AdaptiveTestConfiguration {
   /// Skips every adaptive test whenever [callback] returns true.
   ///
   /// Evaluated when tests are declared. Defaults to never skipping.
+  // ignore: use_setters_to_change_properties
   void setSkipGoldenAssertion(SkipGoldenAssertion? callback) {
     _skipGoldenAssertion = callback;
   }
@@ -137,6 +140,7 @@ class AdaptiveTestConfiguration {
   ///
   /// Defaults to false to keep existing goldens unchanged.
   /// `testAdaptiveThemedWidgets` always applies it.
+  // ignore: use_setters_to_change_properties
   void setApplyThemeModeToPlatformBrightness(bool value) {
     _applyThemeModeToPlatformBrightness = value;
   }
@@ -148,6 +152,7 @@ class AdaptiveTestConfiguration {
   /// Overrides how `expectGolden` names golden files when no `path` is given.
   ///
   /// See [GoldenFileNameFactories].
+  // ignore: use_setters_to_change_properties
   void setGoldenFileNameFactory(GoldenFileNameFactory factory) {
     _goldenFileNameFactory = factory;
   }
@@ -157,6 +162,7 @@ class AdaptiveTestConfiguration {
   WindowConfigDescriber get describeValue => _describeValue;
 
   /// Overrides how a variant is described in test names.
+  // ignore: use_setters_to_change_properties
   void setCustomDescribeValue(WindowConfigDescriber describer) {
     _describeValue = describer;
   }
@@ -191,7 +197,8 @@ See: https://api.flutter.dev/flutter/flutter_test/flutter_test-library.html
 
   /// Set the devices variant on which you want your test to run.
   ///
-  /// Eg [iPhone8], [iPhone13], [iPhone16],[iPhone16Dark], [iPadPro], [desktop], [pixel5], [pixel9].
+  /// Eg [iPhone8], [iPhone13], [iPhone16], [iPhone16Dark], [iPadPro],
+  /// [desktop], [pixel5], [pixel9].
   void setDeviceVariants(Set<WindowConfigData> deviceConfigs) {
     _deviceVariant = WindowVariant(deviceConfigs);
     _themedDeviceVariant = null;

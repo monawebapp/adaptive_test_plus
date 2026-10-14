@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'view/home.dart';
+import 'package:multi_packages_example_app/src/view/home.dart';
 
 class App extends StatelessWidget {
-  const App({Key? key, this.themeMode}) : super(key: key);
+  const App({super.key, this.themeMode});
   final ThemeMode? themeMode;
 
   @override

@@ -4,6 +4,8 @@ import 'package:adaptive_test_plus/src/adaptive/window_config_data/system_nav_ba
 import 'package:adaptive_test_plus/src/adaptive/window_config_data/window_config_data.dart';
 import 'package:flutter/material.dart';
 
+// Names are used as golden file names, so they must not be renamed.
+// ignore_for_file: constant_identifier_names
 enum _Device {
   iPhone_8,
   iPhone_13,

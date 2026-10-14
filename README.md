@@ -221,6 +221,14 @@ Save this script as a `.sh` file and run it from your project root directory.
 
 We welcome feedback, issues, contributions, and suggestions! Feel free to contribute to the development of this package.
 
+### Contributing
+
+The Flutter version used by CI and for the committed goldens is pinned in
+`.fvmrc`. With [FVM](https://fvm.app), run `fvm install` once, then prefix
+commands with `fvm` (`fvm flutter test`). FVM is optional: any Flutter version
+matching the SDK constraints in `pubspec.yaml` works for development, but
+goldens may differ slightly from the ones rendered with the pinned version.
+
 👉 About Theodo Apps
 
 We are a 130 people company developing and designing universal applications with React Native and Flutter using the Lean & Agile methodology. To get more information on the solutions that would suit your needs, feel free to get in touch by email or through or contact form!

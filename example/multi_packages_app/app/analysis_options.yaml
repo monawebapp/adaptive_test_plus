@@ -1,4 +1,8 @@
 include: package:theodo_analysis/analysis_options.yaml
+analyzer:
+  errors:
+    # theodo_analysis references DCM rules unknown to the Dart analyzer.
+    included_file_warning: ignore
 # Additional information about this file can be found at
 # https://pub.dev/packages/theodo_analysis
 linter:

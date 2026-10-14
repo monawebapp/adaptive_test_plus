@@ -1,3 +1,8 @@
+## Unreleased
+
+- chore: widen `equatable` constraint to `>=2.0.5 <4.0.0` to allow equatable 3.x.
+- chore: widen `package_config` constraint to `>=2.1.0 <4.0.0` to allow package_config 3.x.
+
 ## 0.10.4
 
 - fix: catch flaky offstage widget finder errors in awaitImages

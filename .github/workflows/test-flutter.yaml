@@ -10,8 +10,11 @@ jobs:
   test:
     runs-on: macos-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
+          - dir: .
+            name: package
           - dir: example/simple_app
             name: simple_app
           - dir: example/multi_packages_app/app
@@ -25,17 +28,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - id: fvm
-        name: Read pinned Flutter version from .fvmrc
-        run: echo "flutter_version=$(jq -r .flutter "$GITHUB_WORKSPACE/.fvmrc")" >> "$GITHUB_OUTPUT"
+      - id: fvm-config
+        uses: kuhnroyal/flutter-fvm-config-action/config@v3
 
       - uses: subosito/flutter-action@v2.5.0
         with:
-          flutter-version: ${{ steps.fvm.outputs.flutter_version }}
-          channel: "stable"
+          flutter-version: ${{ steps.fvm-config.outputs.FLUTTER_VERSION }}
+          channel: ${{ steps.fvm-config.outputs.FLUTTER_CHANNEL }}
           cache: true
-          cache-key: flutter-macos-${{ steps.fvm.outputs.flutter_version }}
-          cache-path: ${{ runner.tool_cache }}/flutter-${{ steps.fvm.outputs.flutter_version }}
+          cache-key: flutter-macos-${{ steps.fvm-config.outputs.FLUTTER_VERSION }}
+          cache-path: ${{ runner.tool_cache }}/flutter-${{ steps.fvm-config.outputs.FLUTTER_VERSION }}
 
       - name: Install Dependencies
         run: flutter packages get

@@ -1,14 +1,45 @@
-# Adaptive Test
+# Adaptive Test Plus
 
-<p>
-  <a href="https://apps.theodo.com">
-  <img  alt="logo" src="https://raw.githubusercontent.com/bamlab/theodo_analysis/main/doc/theodo_apps_white.png" width="200"/>
-  </a>
-  </br>
-  <p>Devtools to write stunning widget test in Flutter.</br> Made by <a href="https://apps.theodo.com">Theodo Apps</a> ❤️💙💛.</p>
-</p>
+[![pub package](https://img.shields.io/pub/v/adaptive_test_plus.svg)](https://pub.dev/packages/adaptive_test_plus)
 
-![Example](https://raw.githubusercontent.com/bamlab/adaptive_test/main/doc/example.png)
+A **drop-in compatible** fork of
+[adaptive_test](https://pub.dev/packages/adaptive_test) by
+[Theodo Apps](https://apps.theodo.com).
+
+The original package has not been updated for a while, so I forked it to keep
+it maintained and to add the enhancements and features I needed:
+
+- **Light and dark themes**: run every test in both modes with
+  [`testAdaptiveThemedWidgets`](#light-and-dark-themes).
+- **Localized goldens**: run every test once per locale with
+  [`setLocalizedDeviceVariants`](#localized-goldens).
+- **Custom golden file names and test descriptions**: see
+  [Golden File Names](#golden-file-names).
+- **Conditional skipping** of golden tests: see
+  [Skipping Goldens](#skipping-goldens).
+- **`onDeviceSetup` hook** in `expectGolden` for per-device tweaks, such as
+  scrolling, right before the comparison.
+- **More reliable `awaitImages`**: images that only appear once other images
+  have loaded are awaited too.
+- **Up-to-date dependencies**: compatible with `equatable` 3.x,
+  `package_config` 3.x and `cupertino_icons` 2.x.
+
+![Example](https://raw.githubusercontent.com/monawebapp/adaptive_test_plus/main/doc/example.png)
+
+### Coming from `adaptive_test`
+
+Nothing else changes, golden file paths included:
+
+```diff
+ dev_dependencies:
+-  adaptive_test: ^0.10.4
++  adaptive_test_plus: ^0.11.0
+```
+
+```diff
+-import 'package:adaptive_test/adaptive_test.dart';
++import 'package:adaptive_test_plus/adaptive_test_plus.dart';
+```
 
 ## Table of Contents
 1. [Features](#features)
@@ -19,6 +50,10 @@
    - [Configuring Difference Threshold](#configuring-difference-threshold)
    - [Enforcing Test Platform](#enforcing-test-platform)
    - [Writing a Test](#writing-a-test)
+   - [Light and Dark Themes](#light-and-dark-themes)
+   - [Localized Goldens](#localized-goldens)
+   - [Golden File Names](#golden-file-names)
+   - [Skipping Goldens](#skipping-goldens)
 4. [Migration Guide](#migration-guide)
 5. [Additional Information](#additional-information)
 
@@ -33,10 +68,13 @@ Use this package in your tests to:
 - Render a keyboard during tests
 - Set a preferred OS for running tests
 - Configure a difference tolerance threshold for file comparison
+- Run every test in light and dark mode, and once per locale
+- Customize golden file names and test descriptions
+- Skip golden tests conditionally
 
 ## Getting Started
 
-1. Add `adaptive_test` to your dev dependencies.
+1. Add `adaptive_test_plus` to your dev dependencies.
 
 2. Create a `flutter_test_config.dart` file at the root of your `test` folder with a `testExecutable` function:
 
@@ -161,7 +199,110 @@ void main() {
 }
 ```
 
+### Light and Dark Themes
+
+`testAdaptiveThemedWidgets` runs each configured device twice, as
+`<device>_light` and `<device>_dark`. The platform brightness is set
+accordingly, so apps using `ThemeMode.system` render both themes. The theme
+mode is also available as `variant.themeMode`.
+
+```dart
+testAdaptiveThemedWidgets(
+  'Settings page',
+  (tester, variant) async {
+    await tester.pumpWidget(
+      AdaptiveWrapper(
+        windowConfig: variant,
+        tester: tester,
+        child: const App(), // MaterialApp(themeMode: ThemeMode.system, ...)
+      ),
+    );
+
+    await tester.expectGolden<App>(variant);
+  },
+);
+```
+
+Single devices can be derived with `device.light()`, `device.dark()` or
+`device.withThemeMode(mode)`.
+
+To make `testAdaptiveWidgets` apply the platform brightness of dark devices
+such as `iPhone16Dark` too (off by default to keep existing goldens):
+
+```dart
+AdaptiveTestConfiguration.instance.setApplyThemeModeToPlatformBrightness(true);
+```
+
+### Localized Goldens
+
+Run every test once per device and locale. The locale is applied to the test
+platform dispatcher and appended to the golden name, e.g.
+`preview/iPhone_16-app-de.png`:
+
+```dart
+AdaptiveTestConfiguration.instance.setLocalizedDeviceVariants(
+  defaultDeviceConfigs,
+  AppLocalizations.supportedLocales,
+);
+```
+
+Themed tests combine with it automatically. A single device can be localized
+with `device.withLocale(const Locale('de'))`.
+
+### Golden File Names
+
+The default layout is unchanged: `preview/<device>-<widget>[_<suffix>].png`.
+Switch layouts or provide your own:
+
+```dart
+AdaptiveTestConfiguration.instance
+  // golden/<widget>/[<suffix>/][<locale>/]<device>.png
+  ..setGoldenFileNameFactory(GoldenFileNameFactories.nested)
+  // Test names shown in the runner
+  ..setCustomDescribeValue((config) => '${config.name} ${config.themeMode?.name}');
+```
+
+`expectGolden` also accepts `onDeviceSetup`, called after images are loaded and
+right before the comparison, for per-device tweaks:
+
+```dart
+await tester.expectGolden<App>(
+  variant,
+  onDeviceSetup: (tester, config) async {
+    await tester.drag(find.byType(ListView), const Offset(0, -300));
+    await tester.pumpAndSettle();
+  },
+);
+```
+
+### Skipping Goldens
+
+Skip all adaptive tests on machines that can't reproduce your references:
+
+```dart
+AdaptiveTestConfiguration.instance
+  .setSkipGoldenAssertion(() => !Platform.isMacOS);
+```
+
 ## Migration Guide
+
+<details>
+<summary>Migrating from adaptive_test_extended</summary>
+
+`adaptive_test_extended` features are available without its breaking changes:
+
+| adaptive_test_extended | adaptive_test_plus |
+| --- | --- |
+| `package:adaptive_test_extended/adaptive_test_extended.dart` | `package:adaptive_test_plus/adaptive_test_plus.dart` |
+| `testAdaptiveThemedWidgets` | same |
+| `setLocalizedDeviceVariants(devices, locales)` | same |
+| `setCustomDescribeValue` | same |
+| `setSkipGoldenChecker` (skipped off macOS by default) | `setSkipGoldenAssertion` (never skips by default) |
+| `fileNameFactory = ...` | `setGoldenFileNameFactory(...)`, `GoldenFileNameFactories.nested` for the same layout |
+| `expectGolden(onDeviceSetup: ...)` | same |
+| `homeIndicator:` | `systemNavBar: SystemNavBarData.gestureIndicator(...)` |
+| Device names `Desktop`, `Pixel_5` | `desktop`, `pixel_5`: rename or regenerate those goldens |
+| Implicit `golden` tag | pass `tags: ['golden']` explicitly |
 
 </details>
 <details>
@@ -219,7 +360,12 @@ Save this script as a `.sh` file and run it from your project root directory.
 
 ## Additional Information
 
-We welcome feedback, issues, contributions, and suggestions! Feel free to contribute to the development of this package.
+Issues and pull requests are welcome on
+[GitHub](https://github.com/monawebapp/adaptive_test_plus/issues).
+
+This package is based on [adaptive_test](https://github.com/bamlab/adaptive_test),
+created by [Theodo Apps](https://apps.theodo.com) and released under the MIT
+license.
 
 ### Contributing
 
@@ -229,10 +375,7 @@ commands with `fvm` (`fvm flutter test`). FVM is optional: any Flutter version
 matching the SDK constraints in `pubspec.yaml` works for development, but
 goldens may differ slightly from the ones rendered with the pinned version.
 
-👉 About Theodo Apps
-
-We are a 130 people company developing and designing universal applications with React Native and Flutter using the Lean & Agile methodology. To get more information on the solutions that would suit your needs, feel free to get in touch by email or through or contact form!
-
-We will always answer you with pleasure 😁
+Run `make full-checks` to format, analyze and test the package and all example
+apps, or `make gen-golden` to regenerate the goldens.
 
 

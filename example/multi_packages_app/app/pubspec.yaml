@@ -1,5 +1,5 @@
 name: multi_packages_example_app
-description: A multi packages Flutter app to illustrate the package adaptive_test. This "multi_packages_app" package holds the app related code
+description: A multi packages Flutter app to illustrate the package adaptive_test_plus. This "multi_packages_app" package holds the app related code
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
@@ -9,18 +9,18 @@ environment:
   sdk: '>=3.0.5 <4.0.0'
 
 dependencies:
-  cupertino_icons: ^1.0.2
   flutter:
     sdk: flutter
+  cupertino_icons: ^1.0.2
   multi_packages_example_theme:
     path: '../theme'
 
 dev_dependencies:
-  adaptive_test:
-    path: ../../../
-
   flutter_test:
     sdk: flutter
+  adaptive_test_plus:
+    path: ../../../
+
   theodo_analysis: ^1.3.0
 
 flutter:

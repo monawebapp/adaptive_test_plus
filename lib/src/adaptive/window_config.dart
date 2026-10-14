@@ -1,4 +1,5 @@
-import 'package:adaptive_test/src/adaptive/window_config_data/window_config_data.dart';
+import 'package:adaptive_test_plus/src/adaptive/window_config_data/window_config_data.dart';
+import 'package:adaptive_test_plus/src/configuration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -8,7 +9,8 @@ class WindowVariant extends ValueVariant<WindowConfigData> {
   final Set<WindowConfigData> windowConfigs;
 
   @override
-  String describeValue(WindowConfigData value) => value.name;
+  String describeValue(WindowConfigData value) =>
+      AdaptiveTestConfiguration.instance.describeValue(value);
 }
 
 /// Establish a subtree in which adaptive window resolves to the given data.

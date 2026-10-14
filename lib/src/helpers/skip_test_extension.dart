@@ -1,5 +1,5 @@
-import 'package:adaptive_test/adaptive_test.dart';
-import 'package:adaptive_test/src/helpers/target_platform_extension.dart';
+import 'package:adaptive_test_plus/adaptive_test_plus.dart';
+import 'package:adaptive_test_plus/src/helpers/target_platform_extension.dart';
 
 /// Extension on [AdaptiveTestConfiguration] to determine if a test should be
 /// skipped based on the [AdaptiveTestConfiguration.enforcedTestPlatform] and
@@ -12,8 +12,15 @@ extension ShouldSkipAdaptiveTest on AdaptiveTestConfiguration {
   /// This extension is used to determine if a test should be skipped based on
   /// the [AdaptiveTestConfiguration.enforcedTestPlatform] and
   /// [AdaptiveTestConfiguration.failTestOnWrongPlatform] values.
+  ///
+  /// Tests are always skipped when
+  /// [AdaptiveTestConfiguration.skipGoldenAssertion] returns true.
   bool get shouldSkipTest {
     final configuration = AdaptiveTestConfiguration.instance;
+    if (configuration.skipGoldenAssertion?.call() ?? false) {
+      return true;
+    }
+
     final enforcedTestPlatform = configuration.enforcedTestPlatform;
 
     if (enforcedTestPlatform != null &&

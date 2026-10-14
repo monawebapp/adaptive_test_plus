@@ -1,7 +1,7 @@
-import 'package:adaptive_test/src/adaptive/window_config_data/dynamic_island_data.dart';
-import 'package:adaptive_test/src/adaptive/window_config_data/punch_hole_data.dart';
-import 'package:adaptive_test/src/adaptive/window_config_data/system_nav_bar_data.dart';
-import 'package:adaptive_test/src/adaptive/window_config_data/window_config_data.dart';
+import 'package:adaptive_test_plus/src/adaptive/window_config_data/dynamic_island_data.dart';
+import 'package:adaptive_test_plus/src/adaptive/window_config_data/punch_hole_data.dart';
+import 'package:adaptive_test_plus/src/adaptive/window_config_data/system_nav_bar_data.dart';
+import 'package:adaptive_test_plus/src/adaptive/window_config_data/window_config_data.dart';
 import 'package:flutter/material.dart';
 
 // Names are used as golden file names, so they must not be renamed.
@@ -20,7 +20,7 @@ enum _Device {
   String get keyboardName => 'assets/keyboards/$name.png';
 }
 
-const _keyboardPackage = 'adaptive_test';
+const _keyboardPackage = 'adaptive_test_plus';
 
 /// [WindowConfigData] for an iPhone 8.
 final WindowConfigData iPhone8 = WindowConfigData(

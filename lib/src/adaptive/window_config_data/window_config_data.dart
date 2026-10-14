@@ -1,6 +1,6 @@
-import 'package:adaptive_test/src/adaptive/window_config_data/dynamic_island_data.dart';
-import 'package:adaptive_test/src/adaptive/window_config_data/punch_hole_data.dart';
-import 'package:adaptive_test/src/adaptive/window_config_data/system_nav_bar_data.dart';
+import 'package:adaptive_test_plus/src/adaptive/window_config_data/dynamic_island_data.dart';
+import 'package:adaptive_test_plus/src/adaptive/window_config_data/punch_hole_data.dart';
+import 'package:adaptive_test_plus/src/adaptive/window_config_data/system_nav_bar_data.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -22,6 +22,7 @@ class WindowConfigData extends Equatable {
     this.punchHole,
     this.systemNavBar,
     this.themeMode = ThemeMode.light,
+    this.locale,
   })  : viewInsets = ViewPaddingImpl(
               bottom: keyboardSize?.height ?? 0,
             ) *
@@ -75,6 +76,11 @@ class WindowConfigData extends Equatable {
   /// This is null when the device has no theme mode.
   final ThemeMode? themeMode;
 
+  /// Locale applied to the test platform dispatcher while the test runs.
+  ///
+  /// This is null when the device keeps the default test locale.
+  final Locale? locale;
+
   /// Device Platform.
   ///
   /// See: [TargetPlatform]
@@ -122,6 +128,7 @@ class WindowConfigData extends Equatable {
         keyboardName,
         keyboardPackage,
         dynamicIsland,
+        locale,
       ];
 
   WindowConfigData copyWith({
@@ -139,6 +146,7 @@ class WindowConfigData extends Equatable {
     PunchHoleData? punchHole,
     SystemNavBarData? systemNavBar,
     ThemeMode? themeMode,
+    Locale? locale,
   }) {
     final newDensity = pixelDensity ?? this.pixelDensity;
 
@@ -161,12 +169,38 @@ class WindowConfigData extends Equatable {
       punchHole: punchHole ?? this.punchHole,
       systemNavBar: systemNavBar ?? this.systemNavBar,
       themeMode: themeMode ?? this.themeMode,
+      locale: locale ?? this.locale,
     );
   }
+
+  /// Returns a light variant of this device, suffixing its [name] with
+  /// `_light`.
+  WindowConfigData light() => withThemeMode(ThemeMode.light);
+
+  /// Returns a dark variant of this device, suffixing its [name] with `_dark`.
+  WindowConfigData dark() => withThemeMode(ThemeMode.dark);
+
+  /// Returns a copy of this device using [themeMode], suffixing its [name]
+  /// with the theme mode name so golden files and test descriptions stay
+  /// unique.
+  WindowConfigData withThemeMode(ThemeMode themeMode) {
+    final suffix = '_${themeMode.name}';
+
+    return copyWith(
+      name: name.endsWith(suffix) ? name : '$name$suffix',
+      themeMode: themeMode,
+    );
+  }
+
+  /// Returns a copy of this device using [locale].
+  ///
+  /// The [name] is kept as is: the locale is appended to the golden file name
+  /// and to the test description by `AdaptiveTestConfiguration`.
+  WindowConfigData withLocale(Locale locale) => copyWith(locale: locale);
 }
 
 /// Implementation of the abstract class [FakeViewPadding].
-class ViewPaddingImpl implements FakeViewPadding {
+class ViewPaddingImpl extends Equatable implements FakeViewPadding {
   const ViewPaddingImpl({
     this.bottom = 0,
     this.top = 0,
@@ -199,6 +233,9 @@ class ViewPaddingImpl implements FakeViewPadding {
         left: left * operand,
         right: right * operand,
       );
+
+  @override
+  List<Object?> get props => [bottom, top, left, right];
 }
 
 extension FakeViewPaddingX on FakeViewPadding {

@@ -1,5 +1,5 @@
-import 'package:adaptive_test/src/adaptive/window_config.dart';
-import 'package:adaptive_test/src/adaptive/window_config_data/system_nav_bar_data.dart';
+import 'package:adaptive_test_plus/src/adaptive/window_config.dart';
+import 'package:adaptive_test_plus/src/adaptive/window_config_data/system_nav_bar_data.dart';
 import 'package:flutter/material.dart';
 
 class ThreeButtonSystemNavBarLayer extends StatelessWidget {

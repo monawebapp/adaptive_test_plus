@@ -1,4 +1,5 @@
-import 'package:adaptive_test/src/adaptive/window_config_data/window_config_data.dart';
+import 'package:adaptive_test_plus/src/adaptive/window_config_data/window_config_data.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Dart extension to add configuration functions to a [WidgetTester] object,
@@ -17,6 +18,30 @@ extension WidgetTesterWithConfigurableWindow on WidgetTester {
     addTearDown(view.resetDevicePixelRatio);
     addTearDown(view.resetPhysicalSize);
     addTearDown(view.resetViewInsets);
+
+    final locale = windowConfig.locale;
+    if (locale != null) {
+      platformDispatcher
+        ..localeTestValue = locale
+        ..localesTestValue = [locale];
+      addTearDown(platformDispatcher.clearLocaleTestValue);
+      addTearDown(platformDispatcher.clearLocalesTestValue);
+    }
+  }
+
+  /// Sets the platform brightness from [WindowConfigData.themeMode].
+  ///
+  /// [ThemeMode.system] (or null) keeps the current platform brightness.
+  void configurePlatformBrightness(WindowConfigData windowConfig) {
+    final brightness = switch (windowConfig.themeMode) {
+      ThemeMode.dark => Brightness.dark,
+      ThemeMode.light => Brightness.light,
+      ThemeMode.system || null => null,
+    };
+    if (brightness == null) return;
+
+    platformDispatcher.platformBrightnessTestValue = brightness;
+    addTearDown(platformDispatcher.clearPlatformBrightnessTestValue);
   }
 
   /// Configure the tester window to represent an opened keyboard on the given

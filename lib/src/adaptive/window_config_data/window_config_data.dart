@@ -200,10 +200,7 @@ class WindowConfigData extends Equatable {
 }
 
 /// Implementation of the abstract class [FakeViewPadding].
-// `Equatable` is only usable as a mixin from equatable 2.1, and ^2.0.5 is
-// still allowed.
-// ignore: deprecated_member_use
-class ViewPaddingImpl with EquatableMixin implements FakeViewPadding {
+class ViewPaddingImpl extends Equatable implements FakeViewPadding {
   const ViewPaddingImpl({
     this.bottom = 0,
     this.top = 0,

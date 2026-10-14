@@ -1,5 +1,6 @@
 ## Unreleased
 
+- chore: widen `cupertino_icons` constraint to `>=1.0.5 <3.0.0` to allow cupertino_icons 2.x.
 - chore: widen `equatable` constraint to `>=2.0.5 <4.0.0` to allow equatable 3.x.
 - chore: widen `package_config` constraint to `>=2.1.0 <4.0.0` to allow package_config 3.x.
 

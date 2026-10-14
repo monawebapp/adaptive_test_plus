@@ -2,10 +2,27 @@
 
 [![pub package](https://img.shields.io/pub/v/adaptive_test_plus.svg)](https://pub.dev/packages/adaptive_test_plus)
 
-A maintained, **drop-in compatible** continuation of
+A **drop-in compatible** fork of
 [adaptive_test](https://pub.dev/packages/adaptive_test) by
-[Theodo Apps](https://apps.theodo.com), with light/dark themed and localized
-golden tests on top.
+[Theodo Apps](https://apps.theodo.com).
+
+The original package has not been updated for a while, so I forked it to keep
+it maintained and to add the enhancements and features I needed:
+
+- **Light and dark themes**: run every test in both modes with
+  [`testAdaptiveThemedWidgets`](#light-and-dark-themes).
+- **Localized goldens**: run every test once per locale with
+  [`setLocalizedDeviceVariants`](#localized-goldens).
+- **Custom golden file names and test descriptions**: see
+  [Golden File Names](#golden-file-names).
+- **Conditional skipping** of golden tests: see
+  [Skipping Goldens](#skipping-goldens).
+- **`onDeviceSetup` hook** in `expectGolden` for per-device tweaks, such as
+  scrolling, right before the comparison.
+- **More reliable `awaitImages`**: images that only appear once other images
+  have loaded are awaited too.
+- **Up-to-date dependencies**: compatible with `equatable` 3.x,
+  `package_config` 3.x and `cupertino_icons` 2.x.
 
 ![Example](https://raw.githubusercontent.com/monawebapp/adaptive_test_plus/main/doc/example.png)
 
@@ -51,9 +68,9 @@ Use this package in your tests to:
 - Render a keyboard during tests
 - Set a preferred OS for running tests
 - Configure a difference tolerance threshold for file comparison
-- Run every test in light and dark mode
-- Run every test once per locale
+- Run every test in light and dark mode, and once per locale
 - Customize golden file names and test descriptions
+- Skip golden tests conditionally
 
 ## Getting Started
 
@@ -357,5 +374,8 @@ The Flutter version used by CI and for the committed goldens is pinned in
 commands with `fvm` (`fvm flutter test`). FVM is optional: any Flutter version
 matching the SDK constraints in `pubspec.yaml` works for development, but
 goldens may differ slightly from the ones rendered with the pinned version.
+
+Run `make full-checks` to format, analyze and test the package and all example
+apps, or `make gen-golden` to regenerate the goldens.
 
 

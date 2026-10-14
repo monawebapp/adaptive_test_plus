@@ -1,32 +1,39 @@
 ## 0.11.0
 
-First release as `adaptive_test_plus`, a drop-in compatible continuation of
-`adaptive_test` 0.10.4. Golden file paths and existing APIs are unchanged.
+First release as `adaptive_test_plus`, a drop-in compatible fork of
+`adaptive_test` 0.10.4. Existing APIs and golden file paths are unchanged.
 
-- feat: `testAdaptiveThemedWidgets` runs each device in light and dark mode and
-  sets the platform brightness accordingly.
-- feat: `AdaptiveTestConfiguration.themedDeviceVariant`.
-- feat: `WindowConfigData.light()`, `dark()`, `withThemeMode()`.
-- feat: localized goldens with `setLocalizedDeviceVariants`,
-  `WindowConfigData.locale` and `withLocale()`. The locale is applied to the
-  test platform dispatcher.
-- feat: `setApplyThemeModeToPlatformBrightness` (opt-in) for
-  `testAdaptiveWidgets`.
-- feat: `setGoldenFileNameFactory` with `GoldenFileNameFactories.flat`
-  (default) and `GoldenFileNameFactories.nested`.
-- feat: `setCustomDescribeValue` to customize test descriptions.
-- feat: `setSkipGoldenAssertion` to skip adaptive tests conditionally.
-- feat: `expectGolden(onDeviceSetup: ...)` hook.
-- feat: `awaitImages` waits for images appearing after other images loaded
-  (`maxPasses`).
-- fix: `ViewPaddingImpl` value equality, so identical `WindowConfigData` are
-  equal.
-- chore: rename package to `adaptive_test_plus`.
+### Features
+
+- `testAdaptiveThemedWidgets` runs each device in light and dark mode and sets
+  the platform brightness accordingly.
+- `AdaptiveTestConfiguration.themedDeviceVariant`, and
+  `WindowConfigData.light()`, `dark()` and `withThemeMode()`.
+- Localized goldens with `setLocalizedDeviceVariants`, `WindowConfigData.locale`
+  and `withLocale()`. The locale is applied to the test platform dispatcher.
+- `setApplyThemeModeToPlatformBrightness` (opt-in) for `testAdaptiveWidgets`.
+- `setGoldenFileNameFactory` with `GoldenFileNameFactories.flat` (default) and
+  `GoldenFileNameFactories.nested`.
+- `setCustomDescribeValue` to customize test descriptions.
+- `setSkipGoldenAssertion` to skip adaptive tests conditionally.
+- `expectGolden(onDeviceSetup: ...)` hook, called right before the comparison.
+- `awaitImages(maxPasses: ...)` also waits for images that appear once other
+  images have loaded.
+
+### Fixes
+
+- `ViewPaddingImpl` now has value equality, so identical `WindowConfigData`
+  are equal.
+
+### Chores
+
+- Rename the package to `adaptive_test_plus`.
   `package:adaptive_test_plus/adaptive_test.dart` is kept as an alias entry
   point.
-- chore: widen `cupertino_icons` constraint to `>=1.0.5 <3.0.0` to allow cupertino_icons 2.x.
-- chore: widen `equatable` constraint to `>=2.0.5 <4.0.0` to allow equatable 3.x.
-- chore: widen `package_config` constraint to `>=2.1.0 <4.0.0` to allow package_config 3.x.
+- Widen dependency constraints to allow `equatable` 3.x, `package_config` 3.x
+  and `cupertino_icons` 2.x.
+- Pin the Flutter version with FVM (`.fvmrc`), used by CI, and add a `Makefile`
+  for local checks.
 
 ## 0.10.4
 
